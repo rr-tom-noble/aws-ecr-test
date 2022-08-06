@@ -24,3 +24,9 @@ jobs:
           node-version: 18
       - name: Install dependencies
         run: npm install
+      - name: Bootstrap environment
+        run: cdk bootstrap
+      - name: Synthesize stack
+        run: cdk synth SampleImage
+      - name: Deploy stack
+        run: cdk deploy SampleImage${{github.event.inputs.stack}}
