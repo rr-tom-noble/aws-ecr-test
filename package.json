@@ -1,5 +1,23 @@
 {
   "dependencies": {
     "aws-cdk": "^2.35.0"
-  }
+  },
+  "name": "aws-ecr-test",
+  "description": "This repository demonstrates the use of the [AWS Cloud Development Kit (CDK)](https://aws.amazon.com/cdk/) and  [AWS Elastic Container Registry (ECR)](https://aws.amazon.com/ecr/) to distribute built software to end-users,  developers, and GitHub Actions via a cloud-hosted Docker registry.",
+  "version": "1.0.0",
+  "main": "cdk.json"
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rr-tom-noble/aws-ecr-test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rr-tom-noble/aws-ecr-test/issues"
+  },
+  "homepage": "https://github.com/rr-tom-noble/aws-ecr-test#readme"
 }
