@@ -3,18 +3,23 @@ from aws_cdk import aws_iam as iam
 from aws_ecr_test.utils import verify_unset
 
 
-class GithubOIDCPrincipal(iam.OpenIdConnectPrincipal):
-    """An OpenIdConnectPrincipal accessible to a GitHub runner on `branch` of `repo`."""
+class GitHubOIDCPrincipal(iam.OpenIdConnectPrincipal):
+    """An OpenIdConnectPrincipal accessible to a GitHub runner in `environment` of `repo`."""
 
     def __init__(
-        self, provider: iam.OpenIdConnectProvider, repo: str, branch: str, *args, **kwargs
+        self,
+        provider: iam.OpenIdConnectProvider,
+        repo: str,
+        environment: str,
+        *args,
+        **kwargs,
     ) -> None:
         verify_unset(kwargs, ["conditions"])
         issuer = "token.actions.githubusercontent.com"
         kwargs["conditions"] = {
             "StringEquals": {
                 f"{issuer}:aud": "sts.amazonaws.com",
-                f"{issuer}:sub": f"repo:{repo}:ref:refs/heads/{branch}",
+                f"{issuer}:sub": f"repo:{repo}:environment:{environment}",
             }
         }
-        super(GithubOIDCPrincipal, self).__init__(provider, *args, **kwargs)
+        super(GitHubOIDCPrincipal, self).__init__(provider, *args, **kwargs)
