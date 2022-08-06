@@ -75,87 +75,167 @@ The following tables show which identities have which permissions in each stack.
 | Write       | ❌️         | ❌         | ✔️     |
 | Metadata    | ✔️         | ❌         | ❌️     |
 
-### Workflow
 
-TODO: Development cycle details
+## Prerequisites
 
-## First Time Setup
+### Setting up your account
+
+You should begin by [creating an AWS account](https://portal.aws.amazon.com/billing/signup#/start/email) to deploy to.
+
+1. Log in to the AWS Console and navigate to the IAM Dashboard.
+2. Create a user for yourself with the AdministratorAccess policy.
+3. Run `aws configure` and enter your user ID and secret key when prompted.
+
+### Bootstrapping the account
+
+The AWS account will need to be bootstrapped to facilitate deployments through CDK.
 
 1. Install pip and npm.
 2. Run `npm install && pip3 -r requirements.txt`.
-3. Create an AWS account [here](https://portal.aws.amazon.com/billing/signup#/start/email).
-5. Log in to the AWS Console and navigate to the IAM Dashboard.
-6. Create a new policy, AllowAssumeCDKRole, with the following JSON:
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "AllowAssumeCDKRole",
-            "Effect": "Allow",
-            "Action": "sts:AssumeRole",
-            "Resource": "arn:aws:iam::{account-id}:role/cdk-*"
-        }
-    ]
-}
-```
-7. Create a new user, GitHubDeployment, with programmatic access.
-8. Create a new group, DeploymentGroup, with the AWSCloudFormationFullAccess policy.
-9. Continue through the Tags and Review steps to finish creating the user.
-10. From the GitHub repository, navigate to Settings > Environments.
-11. Create a new environment, Deployment.
-12. Configure the environment with protection rules, and set the deployment branch to master.
-13. Add the following secrets to the environment:
-    - `AWS_ACCESS_KEY_ID`: The ID of the GitHubDeployment user.
-    - `AWS_ACCESS_SECRET_KEY`: The secret key of the GitHubDeployment user.
-    - `AWS_DEFAULT_REGION`: The name of the deployment region.
-    - `AWS_DEFAULT_ACCOUNT_ID`: The ID of the AWS account.
+3. Run `cdk bootstrap`
 
-## Deployment
+## Setting up deployments via GitHub
+
+### Authentication flow
+
+1. GitHub runners are trusted by GitHub.
+2. A GitHub runner uses the [Configure AWS Credentials](https://github.com/aws-actions/configure-aws-credentials) action.
+3. GitHub passes an OIDC token to AWS to identify the runner as trusted.
+4. If the runner is for the correct repository and branch, the runner is granted the deployment role.
+5. The runner executes a number of CDK commands.
+6. With the deployment role, the runner can access CloudFormation and assume tighter-scoped roles provided by CDK.
+
+This method of authentication bypasses the need for any AWS credentials to be stored directly on the GitHub.
+
+### Adding GitHub identity management
+
+An identity provider is required to allow GitHub runners to identify themselves within AWS.
+
+1. Log in to the AWS Console and navigate to the IAM Dashboard.
+2. Create a new identity provider, GithubOIDCIdentityProvider, of type OpenId Connect:
+    - `Provider URL`: https://token.actions.githubusercontent.com
+    - `Audience`: sts.amazonaws.com
+
+### Creating a deployment policy
+
+A deployment policy is required to grant trusted users permission to deploy to the account through CDK.
+
+1. Log in to the AWS Console and navigate to the IAM Dashboard.
+2. Create a new policy, CDKDeploymentPolicy
+3. Use the contents of [policies/deployment.json](policies/deployment.json) as policy document.
+
+The policy will allow trusted users to assume the required CDK roles and give them full access to CloudFormation.
+
+### Granting GitHub deployment permissions
+
+A role is required to associate identified GitHub runners with the deployment policy.
+
+1. Log in to the AWS Console and navigate to the IAM Dashboard.
+2. Create a new role, GitHubDeploymentRole.
+3. Configure the role to use the GitHubOIDCIdentityProvider for identification.
+4. Assign the CDKDeploymentPolicy to the role.
+5. Replace the trust policy of the role with the contents of [policies/trust_github.json](policies/trust_github.json)
+
+The role can only be assumed by runners for the master branch of the repository, identified through GitHub.
+
+### Configuring GitHub to use the role
+
+The repository needs to be configured with an environment to use the deployment role.
+
+1. From this repository, navigate to Settings > Environments.
+2. Create a new environment, Deployment.
+3. Configure the environment to require approval from a trusted user, and set the deployment branch to master.
+4. Add the following secrets to the environment:
+    - `AWS_DEFAULT_REGION`: The name of the deployment region.
+    - `AWS_DEPLOYMENT_ROLE_ARN`: The ARN of GithubDeploymentRole.
+    - `AWS_GITHUB_PROVIDER_ARN`: The ARN of GithubIdentityProvider.
+
+### Creating deployment workflows
+
+Deployment workflows should use the Deployment environment and the [Configure AWS Credentials](https://github.com/aws-actions/configure-aws-credentials)
+action when deploying, along with permissions to obtain an OIDC token:
+
+```yaml
+---
+name: Deploy to AWS
+...
+jobs:
+  Deploy:
+    ...
+    environment: Deployment
+    permissions:
+        id-token: write
+        contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOYMENT_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+      - name: Deploy a stack
+        run: ...
+```
+
+## Developers: Deployment Repository
+
+The following section outlines the workflow for developers working on this repository.
+
+### Prerequisites
+1. Run `python3 -m venv .venv` to create a virtual environment.
+2. Run `source .venv/bin/activate` to activate the virtual environment.
+3. Run `npm install && pip3 install -r requirements.txt -r requrements-dev.txt` to install the dependencies.
+
+### Development
+
+1. Make changes to the code.
+2. Run `black app.py aws_ecr_test/ --max-line-length 90` to reformat the code.
+3. Push the changes to GitHub.
+
+### Deployment
 
 1. Navigate to the Actions page of the repository.
 2. Manually run the Deploy to AWS workflow for each stack.
 
-## Post Deployment
 
-1. Log in to the AWS Console and Navigate to the IAM Dashboard.
-2. Create a user, GitHubDevelopment, with programmatic access.
-3. Assign the user to the SampleImageDevelopment...GitHubGroup group.
-4. Navigate to the repository containing the source of the Docker image.
-5. Navigate to Settings > Environments.
-6. Create an Environment, Development.
-7. Configure the environment with protection rules and deployment branches.
-8. Add the following secrets to the environment:
-   - `AWS_SECRET_KEY_ID`: The ID of the GitHubDevelopment user.
-   - `AWS_ACCESS_KEY_ID`: The secret key of the GitHubDevelopment user.
-   - `AWS_DEFAULT_REGION`: The name of the deployment region.
-   - `AWS_DEFAULT_ACCOUNT_ID`: The ID of the AWS account.
-   - `AWS_ECR_REGISTRY`: The ARN of the Development Docker registry (found through the ECR Dashboard).
-9. Repeat steps 2 through 8 for the Master and Release stacks **(development branch should be master only)**.
+## Image repository workflow
+
+### Setting up Docker registry access
+
+Once the stacks have been deployed, the target repository and developers will need access to push and pull images
+from the deployed registries.
+
+#### GitHub Access
+
+1. From the target repository, Navigate to Settings > Environments.
+2. Create a new environment, Development.
+3. Add the following secrets to the environment:
+    - `AWS_DEFAULT_REGION`: The name of the deployment region.
+    - `AWS_GITHUB_ROLE_ARN`: The ARN of SampleImageDevelopment...GitHubRole.
+    - `AWS_ECR_REGISTRY`: The ARN of SampleImageDevelopment...ImageRepository.
+4. Repeat steps 2 and 3 for each deployment environment.
+    - Non-development environments should use master only as the deployment branch.
+    - Release environments should require approval by a trusted user.
 
 
-## New Developers
-
-**Manager Steps**
+#### Developer Access
 
 1. Log in to the AWS Console and Navigate to the IAM Dashboard.
 2. Create a user for the developer with programmatic and password access (MFA enabled).
 3. Assign the user to the following groups:
-   - SampleImageDevelopment...DeveloperGroup
-   - SampleImageMaster...DeveloperGroup
-   - SampleImageRelease...DeveloperGroup
+    - SampleImageDevelopment...DeveloperGroup
+    - SampleImageMaster...DeveloperGroup
+    - SampleImageRelease...DeveloperGroup
 
-**Developer Steps**
 
-1. Run `pip3 install awscli`
-2. Log in to the AWS Console and Navigate to the IAM Dashboard.
-3. Navigate to Users > <Your User> > Security Credentials > Create Access Key
-4. Run `aws configure` and enter your ID and secret key when prompted.
+### Development
 
-## Development
+- The image for a feature branch can be manually pushed using `make docker-push`.
+- The image for a feature branch can be manually pulled using `make docker-pull`.
+- Pushing to a feature branch with an open pull request will automatically push a changed image to the development registry.
+- Merging a feature branch with master will automatically push a changed image to the master registry.
 
-1. Run `python3 -m venv .venv` to create a virtual environment.
-2. Run `source .venv/bin/activate` to activate the virtual environment.
-3. Run `npm install && pip3 install -r requirements.txt -r requrements-dev.txt` to install the dependencies.
-4. Make changes to the code.
-5. Run `black app.py aws_ecr_test/` to reformat the code.
+### Release
+
+1. From the target repository, Navigate to Actions.
+2. Run the Release workflow (a trusted user will need to approve the workflow).
+3. The image will be pushed to the release registry.
