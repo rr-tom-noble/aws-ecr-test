@@ -11,7 +11,6 @@ class SampleDistributionStack(Stack):
         self, scope: Construct, construct_id: str, groups: Dict, **kwargs
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-        account = iam.AccountPrincipal(kwargs["env"].account)
         self.repository = ecr.SampleRepository(self, f"{construct_id}ImageRepository")
         self.groups = [
             self.build_group(construct_id, *group) for group in groups.items()
