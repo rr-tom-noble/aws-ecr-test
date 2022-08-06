@@ -85,16 +85,31 @@ TODO: Development cycle details
 2. Run `npm install && pip3 -r requirements.txt`.
 3. Create an AWS account [here](https://portal.aws.amazon.com/billing/signup#/start/email).
 5. Log in to the AWS Console and navigate to the IAM Dashboard.
-6. Create a new user, GitHubDeployment, with programmatic access.
-7. Create a new group, DeploymentGroup, with the AWSCloudFormationFullAccess policy.
-8. Continue through the Tags and Review steps to finish creating the user.
-9. From the GitHub repository, navigate to Settings > Environments.
-10. Create a new environment, Deployment.
-11. Configure the environment with protection rules, and set the deployment branch to master.
-12. Add the following secrets to the environment:
+6. Create a new policy, AllowAssumeCDKRole, with the following JSON:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowAssumeCDKRole",
+            "Effect": "Allow",
+            "Action": "sts:AssumeRole",
+            "Resource": "arn:aws:iam::{account-id}:role/cdk-*"
+        }
+    ]
+}
+```
+7. Create a new user, GitHubDeployment, with programmatic access.
+8. Create a new group, DeploymentGroup, with the AWSCloudFormationFullAccess policy.
+9. Continue through the Tags and Review steps to finish creating the user.
+10. From the GitHub repository, navigate to Settings > Environments.
+11. Create a new environment, Deployment.
+12. Configure the environment with protection rules, and set the deployment branch to master.
+13. Add the following secrets to the environment:
     - `AWS_ACCESS_KEY_ID`: The ID of the GitHubDeployment user.
     - `AWS_ACCESS_SECRET_KEY`: The secret key of the GitHubDeployment user.
     - `AWS_DEFAULT_REGION`: The name of the deployment region.
+    - `AWS_DEFAULT_ACCOUNT_ID`: The ID of the AWS account.
 
 ## Deployment
 
@@ -114,6 +129,7 @@ TODO: Development cycle details
    - `AWS_SECRET_KEY_ID`: The ID of the GitHubDevelopment user.
    - `AWS_ACCESS_KEY_ID`: The secret key of the GitHubDevelopment user.
    - `AWS_DEFAULT_REGION`: The name of the deployment region.
+   - `AWS_DEFAULT_ACCOUNT_ID`: The ID of the AWS account.
    - `AWS_ECR_REGISTRY`: The ARN of the Development Docker registry (found through the ECR Dashboard).
 9. Repeat steps 2 through 8 for the Master and Release stacks **(development branch should be master only)**.
 
