@@ -27,8 +27,10 @@ class SampleDistributionStack(Stack):
             [grant(self.repository, group) for grant in grants]
         provider_from_arn = iam.OpenIdConnectProvider.from_open_id_connect_provider_arn
         provider_arn, repo, branch, grants = github.items()
-        github_provider = provider_from_arn(provider_arn)
-        github_principal = tn_iam.GithubOIDCPrincipal(github_provider, repo, branch)
-        github_role = iam.Role(self, f"{stack_id}GithubRole", assumed_by=github_principal)
+        github_provider = provider_from_arn(
+            self, "ImportedGitHubOIDCProvider", provider_arn
+        )
+        github_principal = tn_iam.GitHubOIDCPrincipal(github_provider, repo, branch)
+        github_role = iam.Role(self, f"{stack_id}GitHubRole", assumed_by=github_principal)
         self.repository.grant_authorize(github_role)
         [grant(self.repository, github_role) for grant in grants]

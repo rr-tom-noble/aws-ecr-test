@@ -18,7 +18,7 @@ SampleDistributionStack(
     github={
         "provider": github_provider,
         "repo": "rr-tom-noble/aws-ecr-test",
-        "branch": "foo",
+        "branch": "Development",
         "grants": [Grant.READ_IMAGES, Grant.WRITE_IMAGES],
     },
 )
@@ -31,7 +31,7 @@ SampleDistributionStack(
     github={
         "provider": github_provider,
         "repo": "rr-tom-noble/aws-ecr-test",
-        "branch": "master",
+        "environment": "Master",
         "grants": [Grant.WRITE_IMAGES, Grant.WRITE_IMAGES],
     },
 )
@@ -47,7 +47,7 @@ SampleDistributionStack(
     github={
         "provider": github_provider,
         "repo": "rr-tom-noble/aws-ecr-test",
-        "branch": "master",
+        "environment": "Release",
         "grants": [Grant.WRITE_IMAGES],
     },
 )
