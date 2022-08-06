@@ -14,8 +14,9 @@ on:
           - Release
 
 jobs:
-  deploy:
+  Deploy:
     runs-on: ubuntu-latest
+    environment: Deployment
     steps:
-      - name: Deploy Stack
-        run: echo foo
+      - name: Install dependencies
+        run: npm install && pip3 install -r requirements.txt
