@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 18
       - name: Install dependencies
-        run: npm install
+        run: npm install -g aws-cdk
       - name: Bootstrap environment
         run: cdk bootstrap
       - name: Synthesize stack
