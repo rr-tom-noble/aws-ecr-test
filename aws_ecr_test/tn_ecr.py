@@ -7,7 +7,6 @@ from aws_cdk import (
 
 
 class SampleRepository(ecr.Repository):
-
     def __init__(self, scope: Construct, construct_id: str, **kwargs):
         kwargs["image_scan_on_push"] = True
         kwargs["encryption_key"] = ecr.RepositoryEncryption.KMS
@@ -45,7 +44,7 @@ class SampleRepository(ecr.Repository):
                 "ecr:InitiateLayerUpload",
                 "ecr:UploadLayerPart",
                 "ecr:CompleteLayerUpload",
-                "ecr:PutImage"
+                "ecr:PutImage",
             ],
             resources=[self.repository_arn],
         )

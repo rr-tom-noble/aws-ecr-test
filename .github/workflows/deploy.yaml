@@ -6,6 +6,7 @@ on:
     inputs:
       stack:
         type: choice
+        required: true
         description: The AWS Stack to deploy.
         options:
           - Development
@@ -17,5 +18,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy Stack
-        run:
-
+        run: echo foo
