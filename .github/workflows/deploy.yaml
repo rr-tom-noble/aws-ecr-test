@@ -30,6 +30,6 @@ jobs:
       - name: Bootstrap environment
         run: cdk bootstrap
       - name: Synthesize stack
-        run: cdk synth SampleImage
+        run: cdk synth ${{ format('SampleImage{0}'), github.event.inputs.stack }}
       - name: Deploy stack
-        run: cdk deploy SampleImage${{github.event.inputs.stack}}
+        run: cdk deploy ${{ format('SampleImage{0}'), github.event.inputs.stack }}
