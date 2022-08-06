@@ -211,7 +211,7 @@ from the deployed registries.
 3. Add the following secrets to the environment:
     - `AWS_DEFAULT_REGION`: The name of the deployment region.
     - `AWS_GITHUB_ROLE_ARN`: The ARN of SampleImageDevelopment...GitHubRole.
-    - `AWS_ECR_REGISTRY`: The ARN of SampleImageDevelopment...ImageRepository.
+    - `AWS_ECR_REGISTRY_ARN`: The ARN of SampleImageDevelopment...ImageRepository.
 4. Repeat steps 2 and 3 for each deployment environment.
     - Non-development environments should use master only as the deployment branch.
     - Release environments should require approval by a trusted user.
