@@ -1,0 +1,21 @@
+---
+name: Deploy to AWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      stack:
+        type: choice
+        description: The AWS Stack to deploy.
+        options:
+          - Development
+          - Master
+          - Release
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Stack
+        run:
+
