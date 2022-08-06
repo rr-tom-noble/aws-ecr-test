@@ -17,6 +17,8 @@ jobs:
   Deploy:
     runs-on: ubuntu-latest
     environment: Deployment
+    env:
+      AWS_GITHUB_PROVIDER_ARN: ${{ secrets.AWS_GITHUB_PROVIDER_ARN }}
     permissions:
       id-token: write
       contents: read
