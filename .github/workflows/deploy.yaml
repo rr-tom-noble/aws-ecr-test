@@ -19,4 +19,4 @@ jobs:
     environment: Deployment
     steps:
       - name: Install dependencies
-        run: npm install && pip3 install -r requirements.txt
+        run: cd .. && npm install
