@@ -5,13 +5,16 @@ from aws_cdk import (
     aws_iam as iam,
 )
 
+from aws_ecr_test.utils import verify_unset
+
 
 class SampleRepository(ecr.Repository):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs):
+    def __init__(self, scope: Construct, construct_id: str, *args, **kwargs):
+        verify_unset(kwargs, ["image_scan_on_push", "encryption_key", "removal_policy"])
         kwargs["image_scan_on_push"] = True
         kwargs["encryption_key"] = ecr.RepositoryEncryption.KMS
         kwargs["removal_policy"] = RemovalPolicy.DESTROY
-        super(SampleRepository, self).__init__(scope, construct_id, **kwargs)
+        super(SampleRepository, self).__init__(scope, construct_id, *args, **kwargs)
 
     @staticmethod
     def grant_authorize(identity: iam.IGrantable):
