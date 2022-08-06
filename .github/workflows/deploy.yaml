@@ -32,4 +32,4 @@ jobs:
       - name: Synthesize stack
         run: cdk synth ${{ format('SampleImage{0}', github.event.inputs.stack) }}
       - name: Deploy stack
-        run: cdk deploy ${{ format('SampleImage{0}', github.event.inputs.stack) }}
+        run: cdk deploy --require-approval never ${{ format('SampleImage{0}', github.event.inputs.stack) }}
