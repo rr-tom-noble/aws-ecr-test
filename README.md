@@ -4,7 +4,6 @@ This repository demonstrates the use of the [AWS Cloud Development Kit (CDK)](ht
 [AWS Elastic Container Registry (ECR)](https://aws.amazon.com/ecr/) to distribute built software to end-users, 
 developers, and GitHub Actions via a cloud-hosted Docker registry.
 
-The Dockerfile containing 
 
 CDK is used for Infrastructure as Code, which manages related groups of AWS resources as stacks, which are deployed
 via [AWS CloudFormation](https://aws.amazon.com/cloudformation/)
